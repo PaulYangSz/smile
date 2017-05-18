@@ -13,64 +13,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *******************************************************************************/
-package smile.demo.clustering;
 
-import java.awt.BorderLayout;
-import java.awt.FlowLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-import javax.swing.event.AncestorEvent;
-import javax.swing.event.AncestorListener;
-
-import smile.data.AttributeDataset;
+import smile.data.*;
 import smile.data.parser.DelimitedTextParser;
 import smile.plot.ScatterPlot;
 
+import javax.swing.*;
+import javax.swing.event.AncestorEvent;
+import javax.swing.event.AncestorListener;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
 @SuppressWarnings("serial")
-public abstract class ClusteringDemo extends JPanel implements Runnable, ActionListener, AncestorListener {
+public abstract class ClusteringPrac extends JPanel implements Runnable, ActionListener, AncestorListener {
 
     private static final String ERROR = "Error";
     private static String[] datasetName = {
-        "Gaussian/One", "Gaussian/Two", "Gaussian/Three",
-        "Gaussian/Five", "Gaussian/Six", "Gaussian/Elongate",
-        "NonConvex/Cross", "NonConvex/D4", "NonConvex/Face",
-        "NonConvex/Pie", "NonConvex/Ring", "NonConvex/Sincos",
-        "Chameleon/t4.8k", "Chameleon/t5.8k",
-        "Chameleon/t7.10k", "Chameleon/t8.8k"
+        "GPS_Station"
     };
 
     private static String[] datasource = {
-        "clustering/gaussian/one.txt",
-        "clustering/gaussian/two.txt",
-        "clustering/gaussian/three.txt",
-        "clustering/gaussian/five.txt",
-        "clustering/gaussian/six.txt",
-        "clustering/gaussian/elongate.txt",
-        "clustering/nonconvex/cross.txt",
-        "clustering/nonconvex/d4.txt",
-        "clustering/nonconvex/face.txt",
-        "clustering/nonconvex/pie.txt",
-        "clustering/nonconvex/ring.txt",
-        "clustering/nonconvex/sincos.txt",
-        "clustering/chameleon/t4.8k.txt",
-        "clustering/chameleon/t5.8k.txt",
-        "clustering/chameleon/t7.10k.txt",
-        "clustering/chameleon/t8.8k.txt"
+        "myApp/src/main/java/resources/gps_station_hexCI_data.csv"
     };
 
     static double[][][] dataset = null;
     static int datasetIndex = 0;
     static int clusterNumber = 2;
-    
+
     JPanel optionPane;
     JComponent canvas;
     private JTextField clusterNumberField;
@@ -81,13 +51,24 @@ public abstract class ClusteringDemo extends JPanel implements Runnable, ActionL
     /**
      * Constructor.
      */
-    public ClusteringDemo() {
+    public ClusteringPrac() {
         if (dataset == null) {
             dataset = new double[datasetName.length][][];
-            DelimitedTextParser parser = new DelimitedTextParser();
-            parser.setDelimiter("[\t ]+");
+            DelimitedTextParser csvParser = new DelimitedTextParser();
+            csvParser.setDelimiter("[\t ]+");
             try {
-                AttributeDataset data = parser.parse(datasetName[datasetIndex], smile.data.parser.IOUtils.getTestDataFile(datasource[datasetIndex]));
+                Attribute[] attributes = null;
+                if(datasetIndex == 0) {
+                    csvParser.setColumnNames(true);
+                    csvParser.setDelimiter(",");
+                    attributes = new Attribute[5];
+                    attributes[0] = new NominalAttribute("V0");
+                    attributes[1] = new NominalAttribute("V1");
+                    attributes[2] = new NumericAttribute("LAT");
+                    attributes[3] = new NumericAttribute("LNG");
+                    attributes[4] = new StringAttribute("V4");
+                }
+                AttributeDataset data = csvParser.parse(datasetName[datasetIndex], attributes, smile.data.parser.IOUtils.getTestDataFile(datasource[datasetIndex]));
                 dataset[datasetIndex] = data.toArray(new double[data.size()][]);
             } catch (Exception e) {
                 JOptionPane.showMessageDialog(null, "Failed to load dataset.", "ERROR", JOptionPane.ERROR_MESSAGE);
@@ -178,10 +159,21 @@ public abstract class ClusteringDemo extends JPanel implements Runnable, ActionL
             datasetIndex = datasetBox.getSelectedIndex();
             
             if (dataset[datasetIndex] == null) {
-                DelimitedTextParser parser = new DelimitedTextParser();
-                parser.setDelimiter("[\t ]+");
+                DelimitedTextParser csvParser = new DelimitedTextParser();
+                csvParser.setDelimiter("[\t ]+");
                 try {
-                    AttributeDataset data = parser.parse(datasetName[datasetIndex], smile.data.parser.IOUtils.getTestDataFile(datasource[datasetIndex]));
+                    Attribute[] attributes = null;
+                    if(datasetIndex == 0) {
+                        csvParser.setColumnNames(true);
+                        csvParser.setDelimiter(",");
+                        attributes = new Attribute[5];
+                        attributes[0] = new NominalAttribute("V0");
+                        attributes[1] = new NominalAttribute("V1");
+                        attributes[2] = new NumericAttribute("LAT");
+                        attributes[3] = new NumericAttribute("LNG");
+                        attributes[4] = new StringAttribute("V4");
+                    }
+                    AttributeDataset data = csvParser.parse(datasetName[datasetIndex], smile.data.parser.IOUtils.getTestDataFile(datasource[datasetIndex]));
                     dataset[datasetIndex] = data.toArray(new double[data.size()][]);
                 } catch (Exception ex) {
                     JOptionPane.showMessageDialog(null, "Failed to load dataset.", "ERROR", JOptionPane.ERROR_MESSAGE);
