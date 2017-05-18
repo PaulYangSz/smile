@@ -43,6 +43,16 @@ public class IOUtils {
         return new java.io.File(getTestDataPath(path));
     }
 
+    /** Get the file path of sample dataset. */
+    public static String getPracDataPath(String path) {
+        return home + "/../../../../myApp/src/main/" + path;
+    }
+
+    /** Get the file object of sample dataset. */
+    public static File getPracDataFile(String path) {
+        return new java.io.File(getPracDataPath(path));
+    }
+
     /** Get the reader of sample datasets. */
     public static BufferedReader getTestDataReader(String path) throws FileNotFoundException {
         return new BufferedReader(new InputStreamReader(new FileInputStream(getTestDataFile(path))));

@@ -34,7 +34,7 @@ public abstract class ClusteringPrac extends JPanel implements Runnable, ActionL
     };
 
     private static String[] datasource = {
-        "myApp/src/main/java/resources/gps_station_hexCI_data.csv"
+        "resources/gps_station_hexCI_data.csv"
     };
 
     static double[][][] dataset = null;
@@ -68,7 +68,7 @@ public abstract class ClusteringPrac extends JPanel implements Runnable, ActionL
                     attributes[3] = new NumericAttribute("LNG");
                     attributes[4] = new StringAttribute("V4");
                 }
-                AttributeDataset data = csvParser.parse(datasetName[datasetIndex], attributes, smile.data.parser.IOUtils.getTestDataFile(datasource[datasetIndex]));
+                AttributeDataset data = csvParser.parse(datasetName[datasetIndex], attributes, smile.data.parser.IOUtils.getPracDataFile(datasource[datasetIndex]));
                 dataset[datasetIndex] = data.toArray(new double[data.size()][]);
             } catch (Exception e) {
                 JOptionPane.showMessageDialog(null, "Failed to load dataset.", "ERROR", JOptionPane.ERROR_MESSAGE);
