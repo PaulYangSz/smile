@@ -30,11 +30,13 @@ public abstract class ClusteringPrac extends JPanel implements Runnable, ActionL
 
     private static final String ERROR = "Error";
     private static String[] datasetName = {
-        "GPS_Station"
+        "GPS_Station",
+        "GPS_Station_Part1"
     };
 
     private static String[] datasource = {
-        "resources/gps_station_hexCI_data.csv"
+        "resources/gps_station_hexCI_data.csv",
+        "resources/gps_station_hexCI_part1.csv"
     };
 
     static double[][][] dataset = null;
@@ -58,28 +60,26 @@ public abstract class ClusteringPrac extends JPanel implements Runnable, ActionL
             csvParser.setDelimiter("[\t ]+");
             try {
                 Attribute[] attributes = null;
-                if(datasetIndex == 0) {
-                    csvParser.setColumnNames(true);
-                    csvParser.setDelimiter(",");
+                csvParser.setColumnNames(true);
+                csvParser.setDelimiter(",");
 
-                    attributes = new Attribute[5];
-                    attributes[0] = new NominalAttribute("V0");
-                    attributes[1] = new NominalAttribute("V1");
-                    attributes[2] = new NumericAttribute("LAT");
-                    attributes[3] = new NumericAttribute("LNG");
-                    attributes[4] = new StringAttribute("V4");
+                attributes = new Attribute[5];
+                attributes[0] = new NominalAttribute("V0");
+                attributes[1] = new NominalAttribute("V1");
+                attributes[2] = new NumericAttribute("LAT");
+                attributes[3] = new NumericAttribute("LNG");
+                attributes[4] = new StringAttribute("V4");
 
-                    AttributeDataset data = csvParser.parse(datasetName[datasetIndex], attributes, smile.data.parser.IOUtils.getPracDataFile(datasource[datasetIndex]));
+                AttributeDataset data = csvParser.parse(datasetName[datasetIndex], attributes, smile.data.parser.IOUtils.getPracDataFile(datasource[datasetIndex]));
 
-                    double[][] tmpOrigiDataSet = data.toArray(new double[data.size()][]);
-                    double[][] tmpLatLng = new double[data.size()][2];
-                    for(int i = 0; i < data.size(); i++) {
-                        for(int j = 0; j < 2; j++) {
-                            tmpLatLng[i][j] = tmpOrigiDataSet[i][j+2];
-                        }
+                double[][] tmpOrigiDataSet = data.toArray(new double[data.size()][]);
+                double[][] tmpLatLng = new double[data.size()][2];
+                for(int i = 0; i < data.size(); i++) {
+                    for(int j = 0; j < 2; j++) {
+                        tmpLatLng[i][j] = tmpOrigiDataSet[i][j+2];
                     }
-                    dataset[datasetIndex] = tmpLatLng;
                 }
+                dataset[datasetIndex] = tmpLatLng;
             } catch (Exception e) {
                 JOptionPane.showMessageDialog(null, "Failed to load dataset.", "ERROR", JOptionPane.ERROR_MESSAGE);
                 System.err.println(e);
@@ -173,28 +173,26 @@ public abstract class ClusteringPrac extends JPanel implements Runnable, ActionL
                 csvParser.setDelimiter("[\t ]+");
                 try {
                     Attribute[] attributes = null;
-                    if(datasetIndex == 0) {
-                        csvParser.setColumnNames(true);
-                        csvParser.setDelimiter(",");
+                    csvParser.setColumnNames(true);
+                    csvParser.setDelimiter(",");
 
-                        attributes = new Attribute[5];
-                        attributes[0] = new NominalAttribute("V0");
-                        attributes[1] = new NominalAttribute("V1");
-                        attributes[2] = new NumericAttribute("LAT");
-                        attributes[3] = new NumericAttribute("LNG");
-                        attributes[4] = new StringAttribute("V4");
+                    attributes = new Attribute[5];
+                    attributes[0] = new NominalAttribute("V0");
+                    attributes[1] = new NominalAttribute("V1");
+                    attributes[2] = new NumericAttribute("LAT");
+                    attributes[3] = new NumericAttribute("LNG");
+                    attributes[4] = new StringAttribute("V4");
 
-                        AttributeDataset data = csvParser.parse(datasetName[datasetIndex], attributes, smile.data.parser.IOUtils.getPracDataFile(datasource[datasetIndex]));
+                    AttributeDataset data = csvParser.parse(datasetName[datasetIndex], attributes, smile.data.parser.IOUtils.getPracDataFile(datasource[datasetIndex]));
 
-                        double[][] tmpOrigiDataSet = data.toArray(new double[data.size()][]);
-                        double[][] tmpLatLng = new double[data.size()][2];
-                        for(int i = 0; i < data.size(); i++) {
-                            for(int j = 0; j < 2; j++) {
-                                tmpLatLng[i][j] = tmpOrigiDataSet[i][j+2];
-                            }
+                    double[][] tmpOrigiDataSet = data.toArray(new double[data.size()][]);
+                    double[][] tmpLatLng = new double[data.size()][2];
+                    for(int i = 0; i < data.size(); i++) {
+                        for(int j = 0; j < 2; j++) {
+                            tmpLatLng[i][j] = tmpOrigiDataSet[i][j+2];
                         }
-                        dataset[datasetIndex] = tmpLatLng;
                     }
+                    dataset[datasetIndex] = tmpLatLng;
                 } catch (Exception ex) {
                     JOptionPane.showMessageDialog(null, "Failed to load dataset.", "ERROR", JOptionPane.ERROR_MESSAGE);
                     System.err.println(ex);
