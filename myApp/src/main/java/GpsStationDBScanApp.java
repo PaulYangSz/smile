@@ -33,7 +33,7 @@ public class GpsStationDBScanApp extends ClusteringPrac {
     JTextField minPtsField;
     JTextField rangeField;
     int minPts = 10;
-    double range = 10;
+    double range = 0.10;
 
     public GpsStationDBScanApp() {
         // Remove K TextFile
