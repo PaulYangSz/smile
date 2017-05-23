@@ -30,13 +30,25 @@ public abstract class ClusteringPrac extends JPanel implements Runnable, ActionL
 
     private static final String ERROR = "Error";
     private static String[] datasetName = {
-        "GPS_Station",
-        "GPS_Station_Part1"
+        "shanghai1ps",
+        "shanghai2ps",
+        "shanghai3ps",
+        "shanghai4ps",
+        "shanghai1lte",
+        "shanghai2lte",
+        "shanghai3lte",
+        "shanghai4lte"
     };
 
     private static String[] datasource = {
-        "resources/gps_station_hexCI_data.csv",
-        "resources/gps_station_hexCI_part1.csv"
+        "resources/shanghai1ps",
+        "resources/shanghai2ps",
+        "resources/shanghai3ps",
+        "resources/shanghai4ps",
+        "resources/shanghai1lte",
+        "resources/shanghai2lte",
+        "resources/shanghai3lte",
+        "resources/shanghai4lte"
     };
 
     static double[][][] dataset = null;
@@ -64,8 +76,8 @@ public abstract class ClusteringPrac extends JPanel implements Runnable, ActionL
                 csvParser.setDelimiter(",");
 
                 attributes = new Attribute[5];
-                attributes[0] = new NominalAttribute("V0");
-                attributes[1] = new NominalAttribute("V1");
+                attributes[0] = new StringAttribute("V0");
+                attributes[1] = new StringAttribute("V1");
                 attributes[2] = new NumericAttribute("LAT");
                 attributes[3] = new NumericAttribute("LNG");
                 attributes[4] = new StringAttribute("V4");
