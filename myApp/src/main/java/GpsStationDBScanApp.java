@@ -32,8 +32,10 @@ import java.awt.*;
 public class GpsStationDBScanApp extends ClusteringPrac {
     JTextField minPtsField;
     JTextField rangeField;
+    JTextField fenceField;
     int minPts = 10;
-    double range = 0.10;
+    double range = 0.02;
+    double fence = 0.0002;
 
     public GpsStationDBScanApp() {
         // Remove K TextFile
@@ -45,8 +47,12 @@ public class GpsStationDBScanApp extends ClusteringPrac {
         optionPane.add(minPtsField);
 
         rangeField = new JTextField(Double.toString(range), 5);
-        optionPane.add(new JLabel("Range:"));
+        optionPane.add(new JLabel("Range(0.01 = 1KM):"));
         optionPane.add(rangeField);
+
+        fenceField = new JTextField(Double.toString(fence), 7);
+        optionPane.add(new JLabel("Fence(0.00001 = 1M):"));
+        optionPane.add(fenceField);
     }
 
     @Override
@@ -74,20 +80,52 @@ public class GpsStationDBScanApp extends ClusteringPrac {
         }
 
         long clock = System.currentTimeMillis();
-        DBScan<double[]> dbscan = new DBScan<>(dataset[datasetIndex], new EuclideanDistance(), minPts, range);
+        DBScan<double[]> dbscan = new DBScan<>(dataset[datasetIndex], new CosXEuclideanDistance(), minPts, range);
         System.out.format("DBSCAN clusterings %d samples in %dms\n", dataset[datasetIndex].length, System.currentTimeMillis()-clock);
+        System.out.format("Result: %d cluster\n", dbscan.getNumClusters());
+        for(int k = 0; k < dbscan.getNumClusters(); k++) {
+            System.out.println("["+ k +"]'s"+ " size " +dbscan.getClusterSize()[k]);
+        }
+        System.out.println("[OUTLIER]'s"+ " size " +dbscan.getClusterSize()[dbscan.getNumClusters()]);
+        System.out.println();
+
+        /* Calculate the GPS of station */
+        int maxK = -1, maxSize = 0;
+        int[] labelResult = dbscan.getClusterLabel();
+        for(int k = 0; k < dbscan.getNumClusters(); k++) {
+            if(dbscan.getClusterSize()[k] > maxSize) {
+                maxK = k;
+                maxSize = dbscan.getClusterSize()[k];
+            }
+        }
+        double sumLat = 0, sumLng = 0;
+        double sumTotalLat = 0, sumTotalLng = 0;
+        for(int i = 0; i < dataset[datasetIndex].length; i++) {
+            if(labelResult[i] == maxK) {
+                sumLat += dataset[datasetIndex][i][0];
+                sumLng += dataset[datasetIndex][i][1];
+            }
+            sumTotalLat += dataset[datasetIndex][i][0];
+            sumTotalLng += dataset[datasetIndex][i][1];
+        }
+        double stationLat = sumLat / maxSize;
+        double stationLng = sumLng / maxSize;
+        System.out.format("===GPS of Station: (%f, %f)\n", stationLat, stationLng);
+        sumTotalLat = sumTotalLat / dataset[datasetIndex].length;
+        sumTotalLng = sumTotalLng / dataset[datasetIndex].length;
+        System.out.format("~~~Total average: (%f, %f)\n\n", sumTotalLat, sumTotalLng);
 
         JPanel pane = new JPanel(new GridLayout(1, 2));
         PlotCanvas plot = ScatterPlot.plot(dataset[datasetIndex], pointLegend);
         for (int k = 0; k < dbscan.getNumClusters(); k++) {
-                double[][] cluster = new double[dbscan.getClusterSize()[k]][];
-                for (int i = 0, j = 0; i < dataset[datasetIndex].length; i++) {
-                    if (dbscan.getClusterLabel()[i] == k) {
-                        cluster[j++] = dataset[datasetIndex][i];
-                    }
+            double[][] cluster = new double[dbscan.getClusterSize()[k]][];
+            for (int i = 0, j = 0; i < dataset[datasetIndex].length; i++) {
+                if (dbscan.getClusterLabel()[i] == k) {
+                    cluster[j++] = dataset[datasetIndex][i];
                 }
+            }
 
-                plot.points(cluster, pointLegend, Palette.COLORS[k % Palette.COLORS.length]);
+            plot.points(cluster, pointLegend, Palette.COLORS[k % Palette.COLORS.length]);
         }
         pane.add(plot);
 
