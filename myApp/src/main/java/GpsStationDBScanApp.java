@@ -35,7 +35,9 @@ public class GpsStationDBScanApp extends ClusteringPrac {
     JTextField fenceField;
     int minPts = 10;
     double range = 0.02;
-    double fence = 0.0002;
+    double fence = 0.0001;
+
+    DBScan<double[]> dbscan = null;
 
     public GpsStationDBScanApp() {
         // Remove K TextFile
@@ -53,6 +55,78 @@ public class GpsStationDBScanApp extends ClusteringPrac {
         fenceField = new JTextField(Double.toString(fence), 7);
         optionPane.add(new JLabel("Fence(0.00001 = 1M):"));
         optionPane.add(fenceField);
+    }
+
+    public void getStationGps(int maxK, int maxSize, double[][] maxClusterData, double[] latBound, double[] lngBound) {
+        latBound[0] = Double.MAX_VALUE; //Min value
+        latBound[1] = Double.NEGATIVE_INFINITY; //Max value
+        lngBound[0] = Double.MAX_VALUE; //Min value
+        lngBound[1] = Double.NEGATIVE_INFINITY; //Max value
+
+        //int maxK = -1, maxSize = 0;
+        int[] labelResult = dbscan.getClusterLabel();
+        for(int k = 0; k < dbscan.getNumClusters(); k++) {
+            if(dbscan.getClusterSize()[k] > maxSize) {
+                maxK = k;
+                maxSize = dbscan.getClusterSize()[k];
+            }
+        }
+        int copyI = 0;
+
+        double sumLat = 0, sumLng = 0;
+        double sumTotalLat = 0, sumTotalLng = 0;
+        for(int i = 0; i < dataset[datasetIndex].length; i++) {
+            if(labelResult[i] == maxK) {
+                sumLat += dataset[datasetIndex][i][0];
+                sumLng += dataset[datasetIndex][i][1];
+
+                maxClusterData[copyI][0] = dataset[datasetIndex][i][0];
+                maxClusterData[copyI][1] = dataset[datasetIndex][i][1];
+                copyI++;
+
+                latBound[0] = (latBound[0] > dataset[datasetIndex][i][0]) ? dataset[datasetIndex][i][0]: latBound[0];
+                latBound[1] = (latBound[1] < dataset[datasetIndex][i][0]) ? dataset[datasetIndex][i][0]: latBound[1];
+                lngBound[0] = (lngBound[0] > dataset[datasetIndex][i][1]) ? dataset[datasetIndex][i][1]: lngBound[0];
+                lngBound[1] = (lngBound[1] < dataset[datasetIndex][i][1]) ? dataset[datasetIndex][i][1]: lngBound[1];
+            }
+            sumTotalLat += dataset[datasetIndex][i][0];
+            sumTotalLng += dataset[datasetIndex][i][1];
+        }
+        if (copyI != maxSize)
+            throw new IllegalArgumentException(String.format("MaxClusterSize = %d, not equal with maxSize", copyI));
+
+        double stationLat = sumLat / maxSize;
+        double stationLng = sumLng / maxSize;
+        System.out.format("===GPS of Station: (%f, %f)\n", stationLat, stationLng);
+        sumTotalLat = sumTotalLat / dataset[datasetIndex].length;
+        sumTotalLng = sumTotalLng / dataset[datasetIndex].length;
+        System.out.format("~~~Total average: (%f, %f)\n", sumTotalLat, sumTotalLng);
+    }
+
+    public double[] getFenceStationGps(double[][] maxClusterData, double[] latBound, double[] lngBound, double fenceScale) {
+        double[] stationGps = new double[2];
+        int latScale = (int)((latBound[1] - latBound[0])/fenceScale) + 1;
+        int lngScale = (int)((lngBound[1] - lngBound[0])/fenceScale) + 1;
+        int[][] fenceGrid = new int[latScale][lngScale];
+
+        double sumLat = 0, sumLng = 0;
+        int totalValidGrid = 0;
+        for(int i = 0; i < maxClusterData.length; i++) {
+            int gridX = (int)((maxClusterData[i][0] - latBound[0]) / fenceScale);
+            int gridY = (int)((maxClusterData[i][1] - lngBound[0]) / fenceScale);
+            if(fenceGrid[gridX][gridY] == 0) {
+                fenceGrid[gridX][gridY] = 1;
+                sumLat += maxClusterData[i][0];
+                sumLng += maxClusterData[i][1];
+                totalValidGrid++;
+            }
+        }
+        System.out.println("totalValidGrid=" + totalValidGrid);
+
+        stationGps[0] = sumLat / totalValidGrid;
+        stationGps[1] = sumLng / totalValidGrid;
+        System.out.format("+++GPS of Station: (%f, %f) with fence\n\n", stationGps[0], stationGps[1]);
+        return stationGps;
     }
 
     @Override
@@ -79,8 +153,19 @@ public class GpsStationDBScanApp extends ClusteringPrac {
             return null;
         }
 
+        try {
+            fence = Double.parseDouble(fenceField.getText().trim());
+            if (fence <= 0) {
+                JOptionPane.showMessageDialog(this, "Invalid Range: " + fence, "Error", JOptionPane.ERROR_MESSAGE);
+                return null;
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Invalid range: " + fenceField.getText(), "Error", JOptionPane.ERROR_MESSAGE);
+            return null;
+        }
+
         long clock = System.currentTimeMillis();
-        DBScan<double[]> dbscan = new DBScan<>(dataset[datasetIndex], new CosXEuclideanDistance(), minPts, range);
+        dbscan = new DBScan<>(dataset[datasetIndex], new CosXEuclideanDistance(), minPts, range);
         System.out.format("DBSCAN clusterings %d samples in %dms\n", dataset[datasetIndex].length, System.currentTimeMillis()-clock);
         System.out.format("Result: %d cluster\n", dbscan.getNumClusters());
         for(int k = 0; k < dbscan.getNumClusters(); k++) {
@@ -98,22 +183,12 @@ public class GpsStationDBScanApp extends ClusteringPrac {
                 maxSize = dbscan.getClusterSize()[k];
             }
         }
-        double sumLat = 0, sumLng = 0;
-        double sumTotalLat = 0, sumTotalLng = 0;
-        for(int i = 0; i < dataset[datasetIndex].length; i++) {
-            if(labelResult[i] == maxK) {
-                sumLat += dataset[datasetIndex][i][0];
-                sumLng += dataset[datasetIndex][i][1];
-            }
-            sumTotalLat += dataset[datasetIndex][i][0];
-            sumTotalLng += dataset[datasetIndex][i][1];
-        }
-        double stationLat = sumLat / maxSize;
-        double stationLng = sumLng / maxSize;
-        System.out.format("===GPS of Station: (%f, %f)\n", stationLat, stationLng);
-        sumTotalLat = sumTotalLat / dataset[datasetIndex].length;
-        sumTotalLng = sumTotalLng / dataset[datasetIndex].length;
-        System.out.format("~~~Total average: (%f, %f)\n\n", sumTotalLat, sumTotalLng);
+        double[][] maxCluster = new double[maxSize][2];
+        double[] latBound = new double[2];
+        double[] lngBound = new double[2];
+        getStationGps(maxK, maxSize, maxCluster, latBound, lngBound);
+
+        double[] fenceStationGps = getFenceStationGps(maxCluster, latBound, lngBound, fence);
 
         JPanel pane = new JPanel(new GridLayout(1, 2));
         PlotCanvas plot = ScatterPlot.plot(dataset[datasetIndex], pointLegend);
