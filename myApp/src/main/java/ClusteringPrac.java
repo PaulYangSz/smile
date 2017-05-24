@@ -85,6 +85,9 @@ public abstract class ClusteringPrac extends JPanel implements Runnable, ActionL
                 AttributeDataset data = csvParser.parse(datasetName[datasetIndex], attributes, smile.data.parser.IOUtils.getPracDataFile(datasource[datasetIndex]));
 
                 double[][] tmpOrigiDataSet = data.toArray(new double[data.size()][]);
+                //Get string typer value
+                StringAttribute strAttribute = (StringAttribute)data.attributes()[0];
+                System.out.println("Get 1st string type attribute value: " + strAttribute.values().get((int)tmpOrigiDataSet[0][1]));
                 double[][] tmpLatLng = new double[data.size()][2];
                 for(int i = 0; i < data.size(); i++) {
                     for(int j = 0; j < 2; j++) {
