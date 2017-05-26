@@ -98,8 +98,8 @@ public class GpsStationDBScanApp extends ClusteringPrac {
 
     public double[] getFenceStationGps(double[][] maxClusterData, double[] latBound, double[] lngBound, double fenceScale) {
         double[] stationGps = new double[2];
-        double lngFenceScale = fenceScale * Math.cos((latBound[0]+latBound[1])/2);
-        System.out.format("Math.cos(%f) = %f\n", (latBound[0]+latBound[1])/2, Math.cos((latBound[0]+latBound[1])/2));
+        double radians = Math.toRadians((latBound[0]+latBound[1])/2);
+        double lngFenceScale = fenceScale * Math.cos(radians);
         int latScale = (int)((latBound[1] - latBound[0])/fenceScale) + 1;
         int lngScale = (int)((lngBound[1] - lngBound[0])/lngFenceScale) + 1;
         int[][] fenceGrid = new int[latScale][lngScale];

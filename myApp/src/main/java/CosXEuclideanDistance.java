@@ -84,7 +84,8 @@ public class CosXEuclideanDistance implements Metric<double[]>, Serializable {
                     d = x[i] - y[i];
                 }
                 else { /* LNG */
-                    d = Math.cos( (double)( (x[0]+y[0])/2 ) ) * (x[i] - y[i]);
+                    double radians = Math.toRadians((double)(x[0]+y[0])/2);
+                    d = Math.cos(radians) * (x[i] - y[i]);
                 }
                 dist += d * d;
             }
@@ -98,7 +99,8 @@ public class CosXEuclideanDistance implements Metric<double[]>, Serializable {
                     d = x[i] - y[i];
                 }
                 else { /* LNG */
-                    d = Math.cos( (double)( (x[0]+y[0])/2 ) ) * (x[i] - y[i]);
+                    double radians = Math.toRadians((double)(x[0]+y[0])/2);
+                    d = Math.cos(radians) * (x[i] - y[i]);
                 }
                 dist += weight[i] * d * d;
             }
@@ -133,7 +135,8 @@ public class CosXEuclideanDistance implements Metric<double[]>, Serializable {
                         d = x[i] - y[i];
                     }
                     else { /* LNG */
-                        d = Math.cos( (double)( (x[0]+y[0])/2 ) ) * (x[i] - y[i]);
+                        double radians = Math.toRadians((x[0]+y[0])/2);
+                        d = Math.cos(radians) * (x[i] - y[i]);
                     }
                     dist += d * d;
                 }
@@ -150,7 +153,8 @@ public class CosXEuclideanDistance implements Metric<double[]>, Serializable {
                         d = x[i] - y[i];
                     }
                     else { /* LNG */
-                        d = Math.cos( (double)( (x[0]+y[0])/2 ) ) * (x[i] - y[i]);
+                        double radians = Math.toRadians((x[0]+y[0])/2);
+                        d = Math.cos(radians) * (x[i] - y[i]);
                     }
                     dist += weight[i] * d * d;
                 }
@@ -193,7 +197,8 @@ public class CosXEuclideanDistance implements Metric<double[]>, Serializable {
                         d = x[i] - y[i];
                     }
                     else { /* LNG */
-                        d = Math.cos( (double)( (x[0]+y[0])/2 ) ) * (x[i] - y[i]);
+                        double radians = Math.toRadians((x[0]+y[0])/2);
+                        d = Math.cos(radians) * (x[i] - y[i]);
                     }
                     dist += d * d;
                 }
@@ -210,7 +215,8 @@ public class CosXEuclideanDistance implements Metric<double[]>, Serializable {
                         d = x[i] - y[i];
                     }
                     else { /* LNG */
-                        d = Math.cos( (double)( (x[0]+y[0])/2 ) ) * (x[i] - y[i]);
+                        double radians = Math.toRadians((x[0]+y[0])/2);
+                        d = Math.cos(radians) * (x[i] - y[i]);
                     }
                     dist += weight[i] * d * d;
                 }
