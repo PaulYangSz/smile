@@ -65,14 +65,7 @@ public class GpsStationDBScanApp extends ClusteringPrac {
 
         //int maxK = -1, maxSize = 0;
         int[] labelResult = dbscan.getClusterLabel();
-        for(int k = 0; k < dbscan.getNumClusters(); k++) {
-            if(dbscan.getClusterSize()[k] > maxSize) {
-                maxK = k;
-                maxSize = dbscan.getClusterSize()[k];
-            }
-        }
         int copyI = 0;
-
         double sumLat = 0, sumLng = 0;
         double sumTotalLat = 0, sumTotalLng = 0;
         for(int i = 0; i < dataset[datasetIndex].length; i++) {
@@ -105,15 +98,17 @@ public class GpsStationDBScanApp extends ClusteringPrac {
 
     public double[] getFenceStationGps(double[][] maxClusterData, double[] latBound, double[] lngBound, double fenceScale) {
         double[] stationGps = new double[2];
+        double lngFenceScale = fenceScale * Math.cos((latBound[0]+latBound[1])/2);
+        System.out.format("Math.cos(%f) = %f\n", (latBound[0]+latBound[1])/2, Math.cos((latBound[0]+latBound[1])/2));
         int latScale = (int)((latBound[1] - latBound[0])/fenceScale) + 1;
-        int lngScale = (int)((lngBound[1] - lngBound[0])/fenceScale) + 1;
+        int lngScale = (int)((lngBound[1] - lngBound[0])/lngFenceScale) + 1;
         int[][] fenceGrid = new int[latScale][lngScale];
 
         double sumLat = 0, sumLng = 0;
         int totalValidGrid = 0;
         for(int i = 0; i < maxClusterData.length; i++) {
             int gridX = (int)((maxClusterData[i][0] - latBound[0]) / fenceScale);
-            int gridY = (int)((maxClusterData[i][1] - lngBound[0]) / fenceScale);
+            int gridY = (int)((maxClusterData[i][1] - lngBound[0]) / lngFenceScale);
             if(fenceGrid[gridX][gridY] == 0) {
                 fenceGrid[gridX][gridY] = 1;
                 sumLat += maxClusterData[i][0];
